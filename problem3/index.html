@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Problem 3 - Coding Challenge</title>
+<link rel="stylesheet" href="../main.css" />
+<style>
+/* ================================
+   Highlighted code block
+   ================================ */
+.highlighted {
+  position: relative;
+  display: inline-flex;
+  background: rgba(255, 255, 0, 0.183);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  line-height: 1.5;
+}
+.highlighted .tooltip {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 14px);
+  transform: translateY(-50%);
+  background: #1f2937;
+  color: #e5e7eb;
+  padding: 10px 12px;
+  border-radius: 10px;
+  min-width: 220px;
+  max-width: 320px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+
+  /* Ensure arrow is visible */
+  overflow: visible;
+  z-index: 10;
+  text-wrap: auto;
+}
+
+/* Show tooltip on hover */
+.highlighted:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(-50%) translateX(4px);
+}
+
+/* ================================
+   Tooltip title
+   ================================ */
+.highlighted .tooltip .title {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #f9fafb;
+}
+
+/* ================================
+   Tooltip description
+   ================================ */
+.highlighted .tooltip .description {
+  line-height: 1.5;
+  color: #d1d5db;
+}
+
+
+</style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <a href="../index.html">← Back to Home</a>
+        </header>
+        <br>
+        <h1>Problem 3</h1>
+        <br>
+
+        <section class="section">
+            <h2>Problem Statement</h2>
+            <p>
+                Messy React - List out the computational inefficiencies and anti-patterns found in the code block below.
+            </p>
+        </section>
+
+        <section class="section">
+            <h2>Highlighted issues</h2>
+            <p>
+                Hover over the highlited code to see issues
+            </p>
+            <pre><code id="code"></code></pre>
+        </section>
+
+
+<script>
+    function transformCodeWithComments(code) {
+  const lines = code.split('\n');
+  const output = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Match comment pattern: // [N] Title: description
+    const match = line.match(/^\s*\/\/\s*\[(\d+)\]\s*([^:]+):\s*(.+)$/);
+
+    if (!match) {
+      output.push(line);
+      i++;
+      continue;
+    }
+
+    const [, countStr, title, description] = match;
+    const count = Number(countStr);
+
+    // Capture the next N lines of code
+    const codeLines = lines.slice(i + 1, i + 1 + count);
+
+    // Preserve indentation from first code line
+    const indent = codeLines[0]?.match(/^\s*/)?.[0] ?? '';
+
+    output.push(
+      `${indent}<span class="highlighted">`,
+      `${indent}  <span class="tooltip">` +
+        `<span class="title">${title.trim()}</span>` +
+        `<span class="description">${description.trim()}</span>` +
+      `</span>`
+    );
+
+    // Insert the actual code lines unchanged
+    for (const codeLine of codeLines) {
+      output.push(codeLine);
+    }
+
+    output.push(`${indent}</span>`);
+
+    // Skip comment + N code lines
+    i += count + 1;
+  }
+
+  return output.join('\n');
+}
+
+const inputCode = `
+interface WalletBalance {
+  currency: string;
+  amount: number;
+}
+interface FormattedWalletBalance {
+  currency: string;
+  amount: number;
+  formatted: string;
+}
+
+interface Props extends BoxProps {
+
+}
+
+const WalletPage: React.FC<Props> = (props: Props) => {
+// [1] Unused props destructuring: children is destructured but never used, adding noise and suggesting incomplete refactoring.    
+  const { children, ...rest } = props;
+
+  const balances = useWalletBalances();
+  const prices = usePrices();
+
+	const getPriority = (blockchain: any): number => {
+	  switch (blockchain) {
+	    case 'Osmosis':
+	      return 100
+	    case 'Ethereum':
+	      return 50
+	    case 'Arbitrum':
+	      return 30
+	    case 'Zilliqa':
+	      return 20
+	    case 'Neo':
+	      return 20
+	    default:
+	      return -99
+	  }
+	}
+
+  const sortedBalances = useMemo(() => {
+    return balances.filter((balance: WalletBalance) => {
+// [1] Inefficient logic: priority is recomputed multiple times
+		  const balancePriority = getPriority(balance.blockchain);
+		  if (lhsPriority > -99) {
+		     if (balance.amount <= 0) {
+		       return true;
+		     }
+		  }
+		  return false
+		}).sort((lhs: WalletBalance, rhs: WalletBalance) => {
+			const leftPriority = getPriority(lhs.blockchain);
+		  const rightPriority = getPriority(rhs.blockchain);
+		  if (leftPriority > rightPriority) {
+		    return -1;
+		  } else if (rightPriority > leftPriority) {
+		    return 1;
+		  }
+    });
+// [1] Incorrect memo dependencies: prices is unused inside useMemo
+  }, [balances, prices]);
+
+// [6] Dead computation: formattedBalances is created but never used, resulting in wasted memory and CPU cycles.
+  const formattedBalances = sortedBalances.map((balance: WalletBalance) => {
+    return {
+      ...balance,
+      formatted: balance.amount.toFixed()
+    }
+  })
+
+// [11] Multiple issues: index used as key (bad for sorted lists), FormattedWalletBalance type is incorrect here, and derived values are recomputed on every render.
+  const rows = sortedBalances.map((balance: FormattedWalletBalance, index: number) => {
+    const usdValue = prices[balance.currency] * balance.amount;
+    return (
+      <WalletRow 
+        className={classes.row}
+        key={index}
+        amount={balance.amount}
+        usdValue={usdValue}
+        formattedAmount={balance.formatted}
+      />
+    )
+  })
+
+// [5] Missing memoization: rows is not memoized, causing unnecessary React element recreation on every render.
+  return (
+    <div {...rest}>
+      {rows}
+    </div>
+  )
+}
+`;
+
+const output = transformCodeWithComments(inputCode.replaceAll('<', '&lt;'));
+console.log(output);
+document.getElementById("code").innerHTML = output;
+// const output = `
+// <div><span>something</span> hello</div>
+// `;
+// document.getElementById("code").innerHTML = output.replaceAll('<div', '&lt;div').replaceAll('</div', '&lt;/div');
+</script>
+
+        
+    <footer>
+        <p>© 2026 · Coding Challenge Submission</p>
+    </footer>
+    </main>
+</body>
+</html>
