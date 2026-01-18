@@ -1,0 +1,14 @@
+{
+  "name": "code-challenge",
+  "version": "1.0.0",
+  "description": "[Visit site here](https://rupinder1133.github.io/code-challenge/)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "vite": "^7.3.1"
+  }
+}
