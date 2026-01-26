@@ -10,7 +10,7 @@
     <main class="container">
         <header>
             <a href="../index.html">
-                << Back to Home</a>
+                &lt;&lt; Back to Home</a>
             </header>
             <br>
             <h1>Problem 1</h1>
@@ -44,7 +44,7 @@ var sum_to_n_a = function(n) {
             <pre><code>
 var sum_to_n_b = function(n) {
     let sum = 0;
-    for (let i = 1; i <= n; i++) {
+    for (let i = 1; i &lt;= n; i++) {
         sum += i;
     }
     return sum;
@@ -60,7 +60,7 @@ var sum_to_n_b = function(n) {
 
             <pre><code>
 var sum_to_n_c = function(n) {
-    if (n <= 0) return 0;
+    if (n &lt;= 0) return 0;
     return n + sum_to_n_c(n - 1);
 };
       </code></pre>
