@@ -4,7 +4,7 @@
   "description": "[Visit site here](https://rupinder1133.github.io/code-challenge/)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "vite"
   },
   "author": "",
   "license": "ISC",
