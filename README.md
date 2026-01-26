@@ -1,7 +1,4 @@
-
-<a href="https://rupinder1133.github.io/code-challenge/" target="_blank" rel="noopener noreferrer">
-  Visit site here
-</a>
+[Visit site here](https://rupinder1133.github.io/code-challenge/)
 
 
 Run locally
