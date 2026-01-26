@@ -1,27 +1,248 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fancy Form</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Currency Swap</title>
+  
+  <!-- Reuse your existing theme -->
+  <link rel="stylesheet" href="../main.css" />
+  
+  <style>
+    .swap-card {
+      max-width: 520px;
+      margin: 0 auto;
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: #020617;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+    }
+  
+    .field img {
+      width: 28px;
+      height: 28px;
+    }
+  
+    .field input,
+    .field select {
+      background: #020617;
+      outline: none;
+      color: white;
+      border: none;
+      font-size: 1rem;
+    }
+  
+    .field input {
+      flex: 1;
+    }
+  
+    .swap-btn {
+      width: 100%;
+      background: var(--accent);
+      border: none;
+      color: #020617;
+      padding: 0.75rem;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 1rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+  
+    .swap-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  
+    .loader {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #020617;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
 
-  <!-- You may add more stuff here -->
-  <link href="style.css" rel="stylesheet" />
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 
 <body>
+<main class="container">
+  <header>
+    <a href="../index.html">
+      << Back to Home</a>
+  </header>
+  <br>
+  <h1>Problem 2</h1>
+  <br>
+  </header>
 
-  <!-- You may reorganise the whole HTML, as long as your form achieves the same effect. -->
-  <form onsubmit="return !1">
-    <h5>Swap</h5>
-    <label for="input-amount">Amount to send</label>
-    <input id="input-amount" />
+  <section class="section">
+    <h2>Problem Statement</h2>
+    <p>
+      Currency Swap
+    </p>
+  </section>
 
-    <label for="output-amount">Amount to receive</label>
-    <input id="output-amount" />
+  <div class="swap-card">
+    <!-- FROM -->
+    <div class="field">
+      <img id="fromIcon" />
+      <input id="fromAmount" type="number" value="1" />
+      <select id="fromCurrency"></select>
+    </div>
 
-    <button>CONFIRM SWAP</button>
-  </form>
-  <script src="script.js"></script>
+    <!-- SWAP -->
+    <button id="swapBtn" class="swap-btn">
+      ⇄ Swap
+    </button>
+
+    <!-- TO -->
+    <div class="field">
+      <img id="toIcon" />
+      <input id="toAmount" type="number" disabled />
+      <select id="toCurrency"></select>
+    </div>
+  </div>
+
+  <footer>
+    Submitted by
+    <a href="https://www.linkedin.com/in/rupinder-singh-5376879a/" target="_blank" rel="noopener noreferrer"
+      aria-label="Open website in new tab">
+      <strong>Rupinder Singh</strong> ·
+    </a>
+    <span>2026</span>
+    <a href="https://www.linkedin.com/in/rupinder-singh-5376879a/" target="_blank" rel="noopener noreferrer"
+      aria-label="Open website in new tab">
+      <img src="../images/linkedin.svg" alt="Company Logo" style="height: 20px; cursor: pointer;" />
+    </a>
+    <a href="https://github.com/rupinder1133/code-challenge" target="_blank" rel="noopener noreferrer"
+      aria-label="GitHub">
+      <img src="../images/GitHub.svg" alt="Company Logo" style="height: 20px; cursor: pointer;border-radius: 4px;" />
+    </a>
+  
+  </footer>
+  </main>
+  
+  <script>
+    const prices = [
+      { currency: "USD", price: 1 },
+      { currency: "USDC", price: 1 },
+      { currency: "USDT", price: 1 }, // optional fallback if you want
+      { currency: "BUSD", price: 0.9998782611186441 },
+
+      { currency: "ETH", price: 1645.9337373737374 },
+      { currency: "WBTC", price: 26002.82202020202 },
+      { currency: "wstETH", price: 1872.2579742372882 },
+
+      { currency: "ATOM", price: 7.186657333333334 },
+      { currency: "OSMO", price: 0.3772974333333333 },
+      { currency: "LUNA", price: 0.40955638983050846 },
+
+      { currency: "OKB", price: 42.97562059322034 },
+      { currency: "OKT", price: 13.561577966101694 },
+
+      { currency: "GMX", price: 36.345114372881355 },
+      { currency: "ZIL", price: 0.01651813559322034 },
+      { currency: "IRIS", price: 0.0177095593220339 },
+
+      { currency: "SWTH", price: 0.004039850455012084 },
+      { currency: "BLUR", price: 0.20811525423728813 }
+    ];
+
+    const iconsBase =
+      "https://raw.githubusercontent.com/Switcheo/token-icons/main/tokens/";
+
+    const fromAmount = document.getElementById("fromAmount");
+    const toAmount = document.getElementById("toAmount");
+    const fromCurrency = document.getElementById("fromCurrency");
+    const toCurrency = document.getElementById("toCurrency");
+    const swapBtn = document.getElementById("swapBtn");
+    const fromIcon = document.getElementById("fromIcon");
+    const toIcon = document.getElementById("toIcon");
+
+    function populateSelect(select) {
+      prices.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.currency;
+        opt.textContent = p.currency;
+        select.appendChild(opt);
+      });
+    }
+
+    populateSelect(fromCurrency);
+    populateSelect(toCurrency);
+
+    fromCurrency.value = "ETH";
+    toCurrency.value = "USD";
+
+    function updateIcons() {
+      fromIcon.src = `${iconsBase}${fromCurrency.value}.svg`;
+      toIcon.src = `${iconsBase}${toCurrency.value}.svg`;
+    }
+
+    function calculate() {
+      const from = prices.find(p => p.currency === fromCurrency.value);
+      const to = prices.find(p => p.currency === toCurrency.value);
+      const value = (fromAmount.value * from.price) / to.price;
+      toAmount.value = value.toFixed(4);
+    }
+
+    function setDisabled(state) {
+      fromAmount.disabled = state;
+      fromCurrency.disabled = state;
+      toCurrency.disabled = state;
+      swapBtn.disabled = state;
+    }
+
+    fromCurrency.onchange = () => {
+      updateIcons();
+      calculate();
+    };
+
+    toCurrency.onchange = () => {
+      updateIcons();
+      calculate();
+    };
+
+    fromAmount.oninput = calculate;
+
+    swapBtn.onclick = () => {
+      setDisabled(true);
+      swapBtn.innerHTML = `<div class="loader"></div> Swapping`;
+
+      setTimeout(() => {
+        [fromCurrency.value, toCurrency.value] =
+          [toCurrency.value, fromCurrency.value];
+
+        updateIcons();
+        calculate();
+
+            swapBtn.innerHTML = "⇄ Swap";
+            setDisabled(false);
+          }, 500);
+        };
+
+                  // Initial state
+                  updateIcons();
+                  calculate();
+                </script>
 </body>
-
 </html>
